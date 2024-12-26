@@ -2,7 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Loading from './components/Loading';
 import { useSelector } from 'react-redux';
-import Cart from './components/Auth/Cart';
+import Cart from './components/Products/Cart';
 
 // Lazy load components
 const Login = lazy(() => import('./components/Auth/Login'));
