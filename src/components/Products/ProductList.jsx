@@ -109,42 +109,52 @@ const ProductList = () => {
             </ul>
           </nav>
         </div>
-        <input
-          type="text"
-          placeholder="Search by name"
-          value={filterName}
-          onChange={(e) => {
-            setFilterName(e.target.value);
-            setSelectedCategory("all");
-          }}
-          className="border p-2 rounded w-full md:w-1/2 lg:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-        />
-        <div className="w-full max-w-sm mx-auto">
-          <label
-            htmlFor="category-selector"
-            className="block text-gray-700 font-medium mb-2"
-          >
-            Select a Category
-          </label>
-          <select
-            id="category-selector"
-            value={selectedCategory}
-            onChange={handleCategoryChange}
-            className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="" disabled>
-              Choose a category
-            </option>
-            <option key={"all"} value={"all"}>
-              {"All"}
-            </option>
-
-            {categories.map((category) => (
-              <option key={category.slug} value={category.slug}>
-                {category.name}
+        <div className="md:flex">
+          <div className="w-full max-w-sm mb-4">
+            <label
+              htmlFor="category-selector"
+              className="block text-gray-700 font-medium mb-2"
+            >
+              Search
+            </label>
+            <input
+              type="text"
+              placeholder="Search by name"
+              value={filterName}
+              onChange={(e) => {
+                setFilterName(e.target.value);
+                setSelectedCategory("all");
+              }}
+              className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+            />
+          </div>
+          <div className="w-full max-w-sm md:mx-4">
+            <label
+              htmlFor="category-selector"
+              className="block text-gray-700 font-medium mb-2"
+            >
+              Select a Category
+            </label>
+            <select
+              id="category-selector"
+              value={selectedCategory}
+              onChange={handleCategoryChange}
+              className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="" disabled>
+                Choose a category
               </option>
-            ))}
-          </select>
+              <option key={"all"} value={"all"}>
+                {"All"}
+              </option>
+
+              {categories.map((category) => (
+                <option key={category.slug} value={category.slug}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
