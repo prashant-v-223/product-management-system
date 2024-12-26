@@ -1,25 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts } from "../../features/productSlice";
+import {
+  fetchProducts,
+  fetchProductscategories,
+} from "../../features/productSlice";
 import Loading from "../Loading";
 import { addToCart } from "../../features/cartSlice";
 import { useNavigate } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
 const ProductList = () => {
   const dispatch = useDispatch();
-  const { products, loading, error } = useSelector((state) => state.products);
+  const { products, categories, loading, error } = useSelector(
+    (state) => state.products
+  );
   const { items } = useSelector((state) => state.cart);
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterName, setFilterName] = useState("");
+
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
   const productsPerPage = 5;
   // Fetch products when page or productsPerPage changes
   useEffect(() => {
-    dispatch(fetchProducts({ productsPerPage, currentPage }));
-  }, [dispatch, currentPage, productsPerPage]);
-
-  if (loading) {
-    return <Loading />;
-  }
+    dispatch(
+      fetchProducts({
+        productsPerPage,
+        currentPage,
+        filterName,
+        selectedCategory,
+      })
+    );
+  }, [dispatch, currentPage, productsPerPage, filterName, selectedCategory]);
+  useEffect(() => {
+    dispatch(fetchProductscategories({}));
+  }, [dispatch]);
 
   if (error) {
     return (
@@ -38,6 +53,10 @@ const ProductList = () => {
     setCurrentPage(pageNumber);
   };
 
+  const handleCategoryChange = (e) => {
+    const selectedSlug = e.target.value;
+    setSelectedCategory(selectedSlug);
+  };
   // Function to generate pagination pages with ellipses
   const generatePageNumbers = () => {
     const pageNumbers = [];
@@ -64,6 +83,7 @@ const ProductList = () => {
 
     return pageNumbers;
   };
+  console.log("categories", categories);
 
   return (
     <div className="max-w-7xl mx-auto p-4">
@@ -89,88 +109,131 @@ const ProductList = () => {
             </ul>
           </nav>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {currentProducts?.map((product) => (
-          <div
-            key={product.id}
-            className="bg-white p-6 rounded-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+        <input
+          type="text"
+          placeholder="Search by name"
+          value={filterName}
+          onChange={(e) => {
+            setFilterName(e.target.value);
+            setSelectedCategory("all");
+          }}
+          className="border p-2 rounded w-full md:w-1/2 lg:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+        />
+        <div className="w-full max-w-sm mx-auto">
+          <label
+            htmlFor="category-selector"
+            className="block text-gray-700 font-medium mb-2"
           >
-            <div className="relative">
-              <img
-                src={product.thumbnail}
-                alt={product.name}
-                className="w-full h-56 object-contain rounded-lg mb-6"
-              />
-              <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-bl-lg">
-                New
-              </div>
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-              {product.name}
-            </h3>
-            <p className="text-gray-600 mb-4">{product.description}</p>
-            <div className="flex justify-between items-center">
-              <p className="text-xl font-bold text-blue-600">
-                ${product.price}
-              </p>
-              <button
-                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 focus:outline-none"
-                onClick={() => handleAddToCart(product)}
-              >
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+            Select a Category
+          </label>
+          <select
+            id="category-selector"
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="" disabled>
+              Choose a category
+            </option>
+            <option key={"all"} value={"all"}>
+              {"All"}
+            </option>
 
-      {/* Pagination */}
-      <div className="flex justify-center mt-6 space-x-2 flex-wrap">
-        {/* Previous Button */}
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </button>
-        <div className="my-2">
-          {/* Page Number Buttons */}
-          {generatePageNumbers().map((pageNumber, index) => {
-            if (pageNumber === "...") {
-              return (
-                <span key={index} className="px-4 py-2 text-gray-700">
-                  ...
-                </span>
-              );
-            }
-
-            return (
-              <button
-                key={pageNumber}
-                className={`px-4 py-2 mx-1 rounded-lg ${
-                  currentPage === pageNumber
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-700"
-                } hover:bg-blue-400`}
-                onClick={() => handlePageChange(pageNumber)}
-              >
-                {pageNumber}
-              </button>
-            );
-          })}
+            {categories.map((category) => (
+              <option key={category.slug} value={category.slug}>
+                {category.name}
+              </option>
+            ))}
+          </select>
         </div>
-        {/* Next Button */}
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </button>
       </div>
+
+      {!loading ? (
+        <>
+          {" "}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {currentProducts?.map((product) => (
+              <div
+                key={product.id}
+                className="bg-white p-6 rounded-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              >
+                <div className="relative">
+                  <img
+                    src={product.thumbnail}
+                    alt={product.name}
+                    className="w-full h-56 object-contain rounded-lg mb-6"
+                  />
+                  <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-bl-lg">
+                    New
+                  </div>
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+                  {product.name}
+                </h3>
+                <p className="text-gray-600 mb-4">{product.description}</p>
+                <div className="flex justify-between items-center">
+                  <p className="text-xl font-bold text-blue-600">
+                    ${product.price}
+                  </p>
+                  <button
+                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 focus:outline-none"
+                    onClick={() => handleAddToCart(product)}
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Pagination */}
+          <div className="flex justify-center mt-6 space-x-2 flex-wrap">
+            {/* Previous Button */}
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            <div className="my-2">
+              {/* Page Number Buttons */}
+              {generatePageNumbers().map((pageNumber, index) => {
+                if (pageNumber === "...") {
+                  return (
+                    <span key={index} className="px-4 py-2 text-gray-700">
+                      ...
+                    </span>
+                  );
+                }
+
+                return (
+                  <button
+                    key={pageNumber}
+                    className={`px-4 py-2 mx-1 rounded-lg ${
+                      currentPage === pageNumber
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    } hover:bg-blue-400`}
+                    onClick={() => handlePageChange(pageNumber)}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Next Button */}
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </>
+      ) : (
+        <Loading />
+      )}
     </div>
   );
 };
